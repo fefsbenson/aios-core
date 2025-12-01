@@ -1,14 +1,14 @@
 # STORY 2.16: Documentation Sprint 2
 
 **ID:** 2.16 | **Épico:** [EPIC-S2](../../../epics/epic-s2-modular-architecture.md)
-**Sprint:** 2 | **Points:** 5 | **Priority:** 🟡 Medium | **Created:** 2025-01-19
-**Updated:** 2025-11-30
-**Status:** ⏸️ Blocked
+**Sprint:** 2 | **Points:** 5 | **Priority:** 🟡 Medium | **Created:** 2025-11-19
+**Updated:** 2025-12-01
+**Status:** 🟢 Ready for Dev
 
 **Reference:** [ADR-002 Migration Map](../../architecture/decisions/ADR-002-migration-map.md)
 **Quality Gate:** [2.16-documentation.yml](../../qa/gates/2.16-documentation.yml)
 
-**Blocked by:** All Sprint 2 stories must be complete before final documentation
+**Predecessor:** All Sprint 2 implementation stories complete (2.1-2.15, 2.17)
 
 ---
 
@@ -279,10 +279,12 @@ $ aios qa status
 ## 🔗 Dependencies
 
 **Depends on:**
-- All Sprint 2 stories (2.2-2.15) - Need completed features to document
-- [Story 2.10](./story-2.10-quality-gate-manager.md) - Quality Gate Manager
-- [Story 2.11](./story-2.11-mcp-system-global.md) - MCP Global System
-- [Story 2.14](./story-2.14-migration-script.md) - Migration Script
+- All Sprint 2 implementation stories (2.1-2.15, 2.17) - ✅ All complete
+- [Story 2.10](./story-2.10-quality-gate-manager.md) - Quality Gate Manager ✅
+- [Story 2.11](./story-2.11-mcp-system-global.md) - MCP Global System ✅
+- [Story 2.14](./story-2.14-migration-script.md) - Migration Script ✅
+- [Story 2.15](./story-2.15-update-installer.md) - Update Installer ✅
+- [Story 2.17](./story-2.17-complete-dependency-migration.md) - Dependency Migration ✅
 
 **Blocks:**
 - None (final story in Sprint 2)
@@ -376,8 +378,9 @@ _To be filled by @qa agent_
 
 | Date | Version | Description | Author |
 |------|---------|-------------|--------|
-| 2025-01-19 | 0.1 | Story created (bundled in 2.10-2.16) | River |
+| 2025-11-19 | 0.1 | Story created (bundled in 2.10-2.16) | River |
 | 2025-11-30 | 1.0 | Sharded to individual file, full enrichment | Pax |
+| 2025-12-01 | 1.1 | Unblocked: All Sprint 2 dependencies complete, updated status to Ready for Dev | Pax |
 
 ---
 
