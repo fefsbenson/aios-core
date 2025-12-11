@@ -308,9 +308,8 @@ npm publish
 ## Example Squads
 
 ### Official Squads (Reference)
-- [ETL Squad](https://github.com/allfluence/aios-squads/etl) - Data collection and transformation
-- [Creator Squad](https://github.com/allfluence/aios-squads/creator) - Content generation
-- [MMOS Squad](https://github.com/allfluence/aios-squads/mmos) - Mind Model mapping
+- [ETL Squad](https://github.com/SynkraAI/aios-squads/tree/main/etl) - Data collection and transformation
+- [Creator Squad](https://github.com/SynkraAI/aios-squads/tree/main/creator) - Content generation
 
 ## Getting Help
 
