@@ -4,13 +4,14 @@
 <!-- Context: Enhance workflow patterns with transitions and confidence scoring -->
 <!-- Created: 2025-12-23 by @sm (River) -->
 
-## Status: Draft
+## Status: Ready for Development
 
 **Priority:** 🟡 MEDIUM
 **Sprint:** 10
-**Effort:** 6h
+**Effort:** 8-10h
 **Lead:** @dev (Dex)
-**Blocked By:** WIS-1 (Complete)
+**Approved by:** @po (Pax) - 2025-12-24
+**Blocked By:** WIS-1 (Complete ✅)
 
 ---
 
@@ -164,6 +165,39 @@ score(suggestion, context) {
 
 ---
 
+## Testing
+
+**Test Location:** `.aios-core/workflow-intelligence/__tests__/`
+**Framework:** Jest
+
+### Test Scenarios
+
+| Scenario | Input | Expected Output | Priority |
+|----------|-------|-----------------|----------|
+| Confidence scoring - exact command match | `{ trigger: "create-epic", lastCommand: "create-epic" }` | Score ≥ 0.90 | HIGH |
+| Confidence scoring - partial match | `{ trigger: "create-epic", lastCommand: "create-story" }` | Score 0.40-0.60 | HIGH |
+| Confidence scoring - no match | `{ trigger: "create-epic", lastCommand: "push" }` | Score ≤ 0.20 | MEDIUM |
+| Workflow registry - load patterns | Call `loadWorkflows()` | Returns 10 workflows | HIGH |
+| Workflow registry - caching | Call `loadWorkflows()` twice | Second call uses cache | MEDIUM |
+| Workflow registry - match workflow | `{ commands: ["create-epic", "create-story"] }` | Returns `epic_creation` | HIGH |
+| Transition lookup | `getTransitions("epic_creation", "epic_drafted")` | Returns next_steps array | HIGH |
+| Invalid workflow | `getTransitions("invalid", "state")` | Returns empty array | LOW |
+
+### Test Files
+
+| File | Purpose |
+|------|---------|
+| `confidence-scorer.test.js` | Unit tests for scoring algorithm |
+| `workflow-registry.test.js` | Unit tests for registry loading and matching |
+| `integration.test.js` | End-to-end context → suggestions flow |
+
+### Coverage Target
+
+- **Minimum:** 80%
+- **Target:** 90%
+
+---
+
 ## Technical Design
 
 ### Directory Structure (from ADR-WIS-001)
@@ -245,11 +279,14 @@ workflows:
 
 | File | Status | Description |
 |------|--------|-------------|
-| `docs/stories/v2.1/sprint-10/story-wis-2-workflow-registry.md` | Draft | This story |
+| `docs/stories/v2.1/sprint-10/story-wis-2-workflow-registry.md` | Ready | This story |
 | `.aios-core/data/workflow-patterns.yaml` | To Modify | Add transitions to 9 workflows |
 | `.aios-core/workflow-intelligence/registry/workflow-registry.js` | To Create | Registry loader |
 | `.aios-core/workflow-intelligence/engine/confidence-scorer.js` | To Create | Scoring algorithm |
 | `.aios-core/workflow-intelligence/index.js` | To Create | Public API |
+| `.aios-core/workflow-intelligence/__tests__/confidence-scorer.test.js` | To Create | Scorer unit tests |
+| `.aios-core/workflow-intelligence/__tests__/workflow-registry.test.js` | To Create | Registry unit tests |
+| `.aios-core/workflow-intelligence/__tests__/integration.test.js` | To Create | Integration tests |
 
 ---
 
@@ -258,3 +295,4 @@ workflows:
 | Version | Date | Author | Changes |
 |---------|------|--------|---------|
 | 1.0 | 2025-12-23 | @sm (River) | Initial draft from MVP scope |
+| 1.1 | 2025-12-24 | @po (Pax) | PO Validation: APPROVED - Adjusted effort 6h→8-10h, added Testing section with 8 scenarios, expanded File List with test files |
