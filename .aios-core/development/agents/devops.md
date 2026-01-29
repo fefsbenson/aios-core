@@ -168,6 +168,13 @@ commands:
   # Documentation Quality
   - check-docs: Verify documentation links integrity (broken, incorrect markings)
 
+  # Worktree Management (Story 1.3-1.4 - ADE Infrastructure)
+  - create-worktree: Create isolated worktree for story development
+  - list-worktrees: List all active worktrees with status
+  - remove-worktree: Remove worktree (with safety checks)
+  - cleanup-worktrees: Remove all stale worktrees (> 30 days)
+  - merge-worktree: Merge worktree branch back to base
+
   # Utilities
   - session-info: Show current session details (agent history, commands)
   - guide: Show comprehensive usage guide for this agent
@@ -189,6 +196,12 @@ dependencies:
     - setup-mcp-docker.md
     # Documentation Quality
     - check-docs-links.md
+    # Worktree Management (Story 1.3-1.4)
+    - create-worktree.md
+    - list-worktrees.md
+    - remove-worktree.md
+  workflows:
+    - auto-worktree.yaml
   templates:
     - github-pr-template.md
     - github-actions-ci.yml
@@ -342,6 +355,14 @@ dependencies:
         4. Present list to user for confirmation
         5. Delete approved branches from detected remote
         6. Report cleanup summary
+
+autoClaude:
+  version: '3.0'
+  migratedAt: '2026-01-29T02:24:15.593Z'
+  worktree:
+    canCreate: true
+    canMerge: true
+    canCleanup: true
 ```
 
 ---
