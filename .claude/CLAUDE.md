@@ -4,6 +4,27 @@ Este arquivo configura o comportamento do Claude Code ao trabalhar neste reposit
 
 ---
 
+## Constitution
+
+O AIOS possui uma **Constitution formal** com princípios inegociáveis e gates automáticos.
+
+**Documento completo:** `.aios-core/constitution.md`
+
+**Princípios fundamentais:**
+
+| Artigo | Princípio | Severidade |
+|--------|-----------|------------|
+| I | CLI First | NON-NEGOTIABLE |
+| II | Agent Authority | NON-NEGOTIABLE |
+| III | Story-Driven Development | MUST |
+| IV | No Invention | MUST |
+| V | Quality First | MUST |
+| VI | Absolute Imports | SHOULD |
+
+**Gates automáticos bloqueiam violações.** Consulte a Constitution para detalhes completos.
+
+---
+
 ## Premissa Arquitetural: CLI First
 
 O Synkra AIOS segue uma hierarquia clara de prioridades que deve guiar **TODAS** as decisões:
@@ -25,6 +46,8 @@ CLI First → Observability Second → UI Third
 3. **A UI nunca deve ser requisito** para operação do sistema
 4. **Observabilidade serve para entender** o que o CLI está fazendo, não para controlá-lo
 5. **Ao decidir onde implementar algo**, sempre prefira CLI > Observability > UI
+
+> **Referência formal:** Constitution Artigo I - CLI First (NON-NEGOTIABLE)
 
 ---
 
