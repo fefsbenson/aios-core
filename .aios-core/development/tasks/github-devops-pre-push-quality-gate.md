@@ -75,6 +75,63 @@ atomic_layer: Organism
 
 ---
 
+## Constitutional Gate: Quality First
+
+> **Reference:** Constitution Article V - Quality First (MUST)
+> **Severity:** BLOCK
+> **Enforcement:** Mandatory checks before any push
+
+```yaml
+constitutional_gate:
+  article: V
+  name: Quality First
+  severity: BLOCK
+
+  validation:
+    required_checks:
+      - name: lint
+        command: npm run lint
+        must_pass: true
+
+      - name: typecheck
+        command: npm run typecheck
+        must_pass: true
+
+      - name: test
+        command: npm test
+        must_pass: true
+
+      - name: build
+        command: npm run build
+        must_pass: true
+
+      - name: coderabbit
+        check: No CRITICAL issues
+        must_pass: true
+
+      - name: story_status
+        check: Story status is "Done" or "Ready for Review"
+        must_pass: true
+
+  on_violation:
+    action: BLOCK
+    message: |
+      CONSTITUTIONAL VIOLATION: Article V - Quality First
+      Push blocked due to failed quality checks.
+
+      Failed checks:
+      {list_failed_checks}
+
+      Resolution: Fix all failing checks before pushing.
+      Run: npm run lint && npm run typecheck && npm test && npm run build
+
+  bypass:
+    allowed: false
+    reason: "Quality First is NON-NEGOTIABLE per Constitution"
+```
+
+---
+
 ## Pre-Conditions
 
 **Purpose:** Validate prerequisites BEFORE task execution (blocking)
@@ -83,6 +140,13 @@ atomic_layer: Organism
 
 ```yaml
 pre-conditions:
+  - [ ] Constitutional gate passed (Article V: Quality First)
+    tipo: constitutional-gate
+    blocker: true
+    validação: |
+      All quality checks must pass: lint, typecheck, test, build
+    error_message: "Constitutional violation - Quality First checks failed"
+
   - [ ] Task is registered; required parameters provided; dependencies met
     tipo: pre-condition
     blocker: true
