@@ -192,12 +192,12 @@ class WorkflowStateManager {
               progress: this.getProgress(state),
             });
           }
-        } catch {
-          // Skip files that can't be parsed
+        } catch (err) {
+          this._log(`Warning: Could not parse state file ${file}: ${err.message}`);
         }
       }
     } catch {
-      // .aios dir doesn't exist yet
+      this._log('State directory does not exist yet');
     }
 
     return results;
@@ -434,7 +434,6 @@ class WorkflowStateManager {
     }
 
     // Artifacts summary
-    const artifacts = this.getArtifactStatus(state);
     if (state.artifacts.length > 0) {
       lines.push(``);
       lines.push(`--- Artifacts ---`);
@@ -472,9 +471,15 @@ class WorkflowStateManager {
       return { corePath, squadPath: null };
     }
 
+    // Sanitize squad_name to prevent path traversal
+    const squadName = state.squad_name;
+    if (squadName && (squadName.includes('..') || squadName.includes('/') || squadName.includes('\\'))) {
+      return { corePath, squadPath: null };
+    }
+
     // Both 'squad' and 'hybrid' have a squad path
-    const squadPath = state.squad_name
-      ? path.join(this.basePath, 'squads', state.squad_name, 'agents')
+    const squadPath = squadName
+      ? path.join(this.basePath, 'squads', squadName, 'agents')
       : null;
 
     return { corePath, squadPath };
@@ -493,6 +498,10 @@ class WorkflowStateManager {
    * @private
    */
   _generateInstanceId(workflowId) {
+    // Sanitize workflowId to prevent path traversal
+    if (!workflowId || workflowId.includes('..') || workflowId.includes('/') || workflowId.includes('\\')) {
+      throw new Error('workflow.id contains invalid path characters');
+    }
     const date = new Date().toISOString().slice(0, 10).replace(/-/g, '');
     const random = Math.random().toString(36).substring(2, 8);
     return `${workflowId}-${date}-${random}`;
@@ -502,11 +511,7 @@ class WorkflowStateManager {
    * @private
    */
   async _ensureStateDir() {
-    try {
-      await fs.mkdir(this.stateDir, { recursive: true });
-    } catch {
-      // Already exists
-    }
+    await fs.mkdir(this.stateDir, { recursive: true });
   }
 }
 
