@@ -8,6 +8,11 @@ Ship-It evolved from a fork of the original greenfield into a production-grade w
 
 ## Test plan
 
+- [ ] Verify Ship-It file structure matches documented 14 files
+- [ ] Confirm line counts for each Ship-It phase file
+- [ ] Validate gate inventory (69 checks: 34 HB + 24 FS + 11 V)
+- [ ] Review accuracy of comparative metrics table
+- [ ] Verify all referenced Ship-It features exist in source files
 - [ ] Validate that existing greenfield-fullstack.yaml consumers are not broken
 - [ ] Verify gate structures parse correctly (YAML schema validation)
 - [ ] Confirm phase files load independently (each < 1000 lines)
@@ -52,7 +57,7 @@ Ship-It evolved from a fork of the original greenfield into a production-grade w
 **Impact:** Agents read only their phase. Token efficiency. Independent validation per file.
 
 **Files:**
-```
+```text
 manifest.yaml          (465 lines)  — orchestration metadata
 metadata.yaml          (100 lines)  — version history
 phase-0-bootstrap.yaml (1019 lines) — environment setup
@@ -96,6 +101,7 @@ phases:
 **Problem:** Native greenfield has a single entry point — always starts from Phase 0.
 
 **Ship-It solution:** 4 scope modes:
+
 | Mode | Phases | Duration | Command | Use Case |
 |------|--------|----------|---------|----------|
 | `full` | 0-7 | 2-8 weeks | `*ship-completa` | Greenfield from scratch |
@@ -158,6 +164,7 @@ gate_config:
 ```
 
 **Gate inventory across all phases:**
+
 | Gate | Hard Blocks | Fail Staged | Veto Conditions |
 |------|-------------|-------------|-----------------|
 | bootstrap_to_brief | 3 | 2 | 1 |
@@ -187,6 +194,7 @@ cascade_invalidation:
 ```
 
 **Full cascade map:**
+
 | Gate | Trigger | Invalidates |
 |------|---------|-------------|
 | bootstrap_to_brief | Environment changes | All 7 downstream |
@@ -236,7 +244,7 @@ checkpoint_idempotency: "Re-running updates existing entry, safe to re-run"
 **Problem:** Native has no cross-squad dependency handling.
 
 **Ship-It solution (Phase 5 — pedro-valerio integration):**
-```
+```text
 If squad dependency not installed:
 
 STEP F1 — STOP & INFORM (inline warning with affected checks)
@@ -254,6 +262,7 @@ STEP F3 — If accepted: state.yaml tracks all skipped checks + justification
 **Problem:** Native greenfield has prose descriptions ("Can do brainstorming first"). No machine-executable checks.
 
 **Ship-It solution:** 3 verify types:
+
 | Type | Description | Automatable | Example |
 |------|-------------|-------------|---------|
 | `shell` | Executable command | Yes | `test -f docs/02_PRD.md` |
@@ -268,6 +277,7 @@ STEP F3 — If accepted: state.yaml tracks all skipped checks + justification
 **Problem:** Native has no severity levels. Everything is either optional or required (binary).
 
 **Ship-It solution:** 3 severity levels:
+
 | Severity | Action | Bypass | Example |
 |----------|--------|--------|---------|
 | `halt` | STOP workflow entirely | None | Deploy not in production |
@@ -368,6 +378,7 @@ on_fail: "BLOCK step_9 (DoD)"
 **Problem:** Native PRD creation is a single step (`pm-create-prd`) with no quality enforcement.
 
 **Ship-It solution:** 4 protocols embedded in PRD creation:
+
 | Protocol | Purpose | Example |
 |----------|---------|---------|
 | P1: Caminho Infeliz | Edge case handling per feature | Loading states, error messages, retry logic |
@@ -385,7 +396,7 @@ Plus: **Auto-Revisão QA Preventivo** — PM self-audits PRD before presenting t
 **Problem:** Native design is sequential (architect → UX → architect review). No data track. No cross-validation.
 
 **Ship-It solution:** 3 tracks with dependency management:
-```
+```text
 Track A (PARALLEL):  Architect + UX → read PRD independently
 Track B (SEQUENTIAL): Data-engineer → blocked until architecture exists
 Track C (CONSOLIDATION): Architect → validates alignment across all 3
@@ -499,7 +510,7 @@ rule: "User NEVER opens files. Complete artifact rendered in conversation."
 **Problem:** Native has no structured validation. Optional PO review.
 
 **Ship-It solution:** Every phase artifact goes through:
-```
+```text
 Present inline → 3 options: Approve / Adjust sections / Redo
 → If adjust: modify specific sections → re-present → re-validate
 → Loop until explicit user approval
@@ -588,7 +599,7 @@ Move `squads/ship-it/workflows/` to `.aios-core/development/workflows/greenfield
 ## Files Changed
 
 ### Source (Ship-It — reference)
-```
+```text
 squads/ship-it/workflows/manifest.yaml
 squads/ship-it/workflows/metadata.yaml
 squads/ship-it/workflows/phase-0-bootstrap.yaml
@@ -606,7 +617,7 @@ squads/ship-it/workflows/phase-7-delivery.yaml
 ```
 
 ### Target (Greenfield Native — to be updated)
-```
+```text
 .aios-core/development/workflows/greenfield-fullstack.yaml  (current — to be replaced/sharded)
 ```
 
