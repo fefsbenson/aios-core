@@ -6,6 +6,16 @@ Deep comparative analysis between the **native AIOS greenfield workflow** (`gree
 
 Ship-It evolved from a fork of the original greenfield into a production-grade workflow system with structured gates, fail-staged protocols, cascade invalidation, physical verification, and a complete delivery phase — all absent from the current native workflow.
 
+> **Note:** This is the first document in `docs/proposals/`, establishing this directory as the RFC/proposal location for the project.
+
+### Source Verification
+
+The Ship-It squad workflows referenced in this analysis live in the private AIOS-MASTER monorepo under `squads/ship-it/workflows/` (14 files). They are not present in the `aios-core` public repository. To verify claims:
+
+- **Internal reviewers** with monorepo access can inspect `squads/ship-it/workflows/` directly
+- **External reviewers** can reference the `manifest.yaml` excerpt in [Appendix A](#appendix-a-manifest-excerpt) and the complete gate definition example in [Appendix B](#appendix-b-gate-definition-example) included at the end of this document
+- Line counts, gate inventories, and feature existence were verified against Ship-It v3.3 (commit audited 2026-02-11 by @pedro-valerio, score 78→95/100)
+
 ## Test plan
 
 - [ ] Verify Ship-It file structure matches documented 14 files
@@ -207,6 +217,12 @@ cascade_invalidation:
 
 **Impact:** Changes propagate correctly. No stale artifacts downstream.
 
+**Granularity controls (runtime considerations):**
+- **Change detection** uses content checksums (not timestamps) — a non-breaking config tweak that doesn't alter artifact checksums will NOT trigger invalidation
+- **Scope filtering** is available per gate: `cascade_scope: [content, structure, metadata]` allows distinguishing breaking vs non-breaking changes
+- **Interaction with checkpoints:** invalidation resets the affected gate's checkpoint status in `state.yaml`, but preserves the artifact files — the gate must be re-evaluated, not necessarily re-executed from scratch
+- **Selective re-run:** when a cascade triggers, the runtime presents affected phases and lets the user choose: re-run all, re-run selectively, or acknowledge-and-proceed (with degradation tracking)
+
 ---
 
 #### B3. Checkpoint Idempotency
@@ -320,6 +336,12 @@ step_9_definition_of_done:  # Completion criteria + gate_config
 ```
 
 **Impact:** Consistent execution contract. Any agent knows exactly what to expect from any phase.
+
+**Adoption profile consideration:** For the core framework (serving diverse users including simple MVPs), the 9 Passos structure should support two profiles:
+- **Full profile** (default for `full` and `light` scope modes) — all 9 steps mandatory
+- **Lite profile** (for `hotfix` and `quick_fix` scope modes) — steps 1, 4, 5, 7, 9 required; steps 2, 3, 6, 8 optional with degradation tracking
+
+This prevents the framework from being overly rigid for small fixes while maintaining the full contract for complex projects.
 
 ---
 
@@ -596,6 +618,39 @@ Move `squads/ship-it/workflows/` to `.aios-core/development/workflows/greenfield
 
 ---
 
+## Migration Impact
+
+Regardless of which implementation option is chosen, the following files in `aios-core` would require changes:
+
+| File | Option 1 (Full) | Option 2 (Incremental) | Option 3 (Promote) |
+|------|-----------------|------------------------|---------------------|
+| `.aios-core/development/workflows/greenfield-fullstack.yaml` | Replaced by sharded directory | Modified in-place (gates added) | Replaced by sharded directory |
+| `.aios-core/core/orchestration/greenfield-handler.js` | Updated phase parsing logic | Minimal changes (gate hooks added) | Updated phase parsing logic |
+| `.aios-core/development/workflows/greenfield-service.yaml` | Updated to match new structure | Updated incrementally | Updated to match new structure |
+| `.aios-core/development/workflows/greenfield-ui.yaml` | Updated to match new structure | Updated incrementally | Updated to match new structure |
+| `docs/aios-workflows/` | Documentation rewritten | Documentation updated per feature | Documentation rewritten |
+| Agent files referencing greenfield phases | Updated phase references | No changes needed | Updated phase references + generalize squad-specific names |
+
+**Backward compatibility note:** Option 2 is the only non-breaking path. Options 1 and 3 require a migration guide for existing consumers of `greenfield-handler.js` phase parsing logic.
+
+---
+
+## Glossary (Portuguese → English)
+
+Several Ship-It concepts use Portuguese terminology from the original squad context. English equivalents for codebase discoverability:
+
+| Portuguese Term | English Equivalent | Context |
+|----------------|-------------------|---------|
+| Framework 9 Passos | 9-Step Framework | Phase execution standard (Category E) |
+| Caminho Infeliz | Unhappy Path | Edge case / error flow handling (Protocol P1) |
+| Fricção Zero | Zero Friction | Manual fallback for every automation (Protocol P2) |
+| Inteligência de Interface | Interface Intelligence | Smart input/search field logic (Protocol P3) |
+| Validação Técnica | Technical Validation | Exact parameters specification (Protocol P4) |
+| Auto-Revisão QA Preventivo | Preventive QA Self-Review | PM self-audit before user presentation |
+| COBERTO / ÓRFÃO | Covered / Orphaned | Traceability status in QA audit |
+
+---
+
 ## Files Changed
 
 ### Source (Ship-It — reference)
@@ -625,3 +680,145 @@ squads/ship-it/workflows/phase-7-delivery.yaml
 
 *Analysis performed by @squad-chief on 2026-02-15*
 *Ship-It v3.3 created by @pedro-valerio + @alan, audited 2026-02-11*
+
+---
+
+## Appendix A: Manifest Excerpt
+
+Phase registry structure from `squads/ship-it/workflows/manifest.yaml` (excerpt):
+
+```yaml
+phases:
+  - id: "bootstrap"
+    name: "Environment Bootstrap"
+    order: 0
+    file: "phase-0-bootstrap.yaml"
+    estimated_duration: "1-2 horas"
+    skippable: true
+    critical: false
+    gate_in: null
+    gate_out: "bootstrap_to_brief"
+
+  - id: "brownfield_discovery"
+    name: "Brownfield Discovery"
+    order: "0b"
+    file: "phase-0b-brownfield-discovery.yaml"
+    mode: "brownfield"
+    replaces_phases: ["brief", "research"]
+    gate_out: "brownfield_to_planning"
+
+  - id: "brief"
+    name: "Project Brief"
+    order: 1
+    file: "phase-1-brief.yaml"
+    estimated_duration: "2-4 horas"
+    skippable: false
+    critical: true
+    gate_in: "bootstrap_to_brief"
+    gate_out: "brief_to_research"
+
+  # ... (remaining 11 phases follow same structure)
+
+scope_modes:
+  full:
+    phases: [0, 1, 2, 3, 4, 5, 6, 7]
+    estimated_duration: "2-8 semanas"
+  light:
+    phases: [5, 6, 7]
+    estimated_duration: "1-3 semanas"
+  hotfix:
+    phases: [6, 7]
+    estimated_duration: "2-8 horas"
+  quick_fix:
+    phases: [6, 7]
+    estimated_duration: "1-4 horas"
+
+verify_types: ["shell", "state", "manual"]
+severity_levels: ["halt", "block", "warn"]
+```
+
+---
+
+## Appendix B: Gate Definition Example
+
+Complete `prd_to_design` gate definition from `squads/ship-it/workflows/phase-3-prd.yaml` — demonstrates the 3-layer structure with 4 hard blocks, 4 fail-staged checks, and 1 veto condition:
+
+```yaml
+gate_config:
+  gate_id: "prd_to_design"
+  description: "PRD → Design transition gate"
+
+  hard_blocks:
+    - id: "HB-PRD-001"
+      condition: "PRD document must exist"
+      verify_type: "shell"
+      verify: "test -f docs/02_PRD.md"
+      severity: "halt"
+      message: "PRD not found — cannot proceed to Design"
+
+    - id: "HB-PRD-002"
+      condition: "PRD approved by user"
+      verify_type: "state"
+      verify: "state.yaml: prd.checkpoint.user_approval == true"
+      severity: "halt"
+      message: "PRD not approved — user must explicitly approve before Design"
+
+    - id: "HB-PRD-003"
+      condition: "Zero placeholders remaining"
+      verify_type: "shell"
+      verify: "! grep -qE '\\{[^}]+\\}' docs/02_PRD.md"
+      severity: "halt"
+      message: "PRD contains placeholders — all must be resolved"
+
+    - id: "HB-PRD-004"
+      condition: "Minimum functional requirements met"
+      verify_type: "shell"
+      verify: "grep -c 'RF-' docs/02_PRD.md | awk '{exit ($1 >= 3) ? 0 : 1}'"
+      severity: "halt"
+      message: "PRD must have at least 3 functional requirements (RF-*)"
+
+  fail_staged_checks:
+    - id: "FS-PRD-001"
+      condition: "Unhappy paths documented for each feature"
+      verify_type: "manual"
+      severity: "block"
+      impact: "Missing edge cases will cascade to incomplete Design"
+      requires: "user_acknowledgment"
+
+    - id: "FS-PRD-002"
+      condition: "Non-functional requirements derived"
+      verify_type: "shell"
+      verify: "grep -c 'RNF-' docs/02_PRD.md | awk '{exit ($1 >= 3) ? 0 : 1}'"
+      severity: "block"
+      impact: "Architecture cannot optimize without NFRs"
+      requires: "user_acknowledgment"
+
+    - id: "FS-PRD-003"
+      condition: "Risk matrix populated"
+      verify_type: "manual"
+      severity: "block"
+      impact: "Unidentified risks may surface during execution"
+      requires: "user_acknowledgment"
+
+    - id: "FS-PRD-004"
+      condition: "Technical validation parameters specified"
+      verify_type: "manual"
+      severity: "block"
+      impact: "Ambiguous specs lead to design interpretation drift"
+      requires: "user_acknowledgment"
+
+  veto_conditions:
+    - id: "V-PRD-001"
+      condition: "PRD must be self-sufficient — no external context required"
+      severity: "block"
+      action: "BLOCK_ADVANCE"
+      message: "PRD ruim = Design ruim = Planning ruim = Execution ruim"
+
+  cascade_invalidation:
+    trigger: "If PRD changes after Design starts"
+    action: "Invalidate Design + all downstream"
+    downstream_impact: ["design", "planning", "execution", "delivery"]
+    detection: "content_checksum"
+
+  checkpoint_idempotency: "Re-running updates existing entry, safe to re-run"
+```
